@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.less";
+import { Calculator } from "./Calculator";
+import { EvaIcon } from "./components/EvaIcon";
+import styled from "styled-components";
 
-function App() {
+const Title = styled.div`
+  font-family: Rambla;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 18px;
+  line-height: 22px;
+  color: #2f80ed;
+`;
+
+const Header = styled.div`
+  display: flex;
+  width: 400px;
+  margin-bottom: 41px;
+  margin-top: 19px;
+`;
+
+export const App = () => {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header>
+        <EvaIcon
+          style={{ margin: "0 66px 0 28px" }}
+          fill="#828282"
+          name="chevron-left"
+          size="large"
+        />
+        <Title>Let’s plan your saving goal</Title>
+      </Header>
+      <Calculator />
     </div>
   );
-}
-
-export default App;
+};
