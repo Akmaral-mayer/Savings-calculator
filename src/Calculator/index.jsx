@@ -3,7 +3,15 @@ import "./Calculator.less";
 import { Switch, Button, Input, DatePicker } from "antd";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { switch_amount_type } from "./../store/calculator/actions";
+import {
+  switch_amount_type,
+  calculate_by_total,
+  calculate_by_monthly,
+  set_date,
+  set_monthly_amount,
+  set_total_amount,
+} from "./../store/calculator/actions";
+import moment from "moment";
 
 const Label = styled.div`
   font-family: Rambla;
@@ -25,8 +33,6 @@ const Price = styled.div`
 `;
 
 const Prefix = styled.div`
-  // width: 42px;
-  // height: 42px;
   left: 46px;
   top: 300px;
   background: #f4f8fa;
@@ -39,12 +45,27 @@ export const Calculator = () => {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.calculator);
 
-  // const [switchBtn, setSwitch] = useState(state.monthly_amount);
-  const switchBtn = state.monthly_amount;
+  const switchState = state.amount_type;
 
-  function onChange(checked) {
+  function onSwitch(checked) {
     dispatch(switch_amount_type(checked));
-    console.log(state.monthly_amount);
+  }
+
+  const onChangeDate = (val) => {
+    dispatch(set_date(val));
+  };
+
+  const onFinish = () => {
+    switchState
+      ? dispatch(calculate_by_total(state.total_amount / state.months_count))
+      : dispatch(
+          calculate_by_monthly(state.monthly_amount * state.months_count)
+        );
+  };
+
+  function disabledDate(current) {
+    // Can not select days before today and today
+    return current && current < moment().endOf("day");
   }
 
   return (
@@ -55,42 +76,59 @@ export const Calculator = () => {
       <div>
         <Switch
           style={{ marginRight: 8 }}
-          defaultChecked={state.monthly_amount}
-          onChange={onChange}
+          defaultChecked={switchState}
+          onChange={onSwitch}
         />
-        {switchBtn
-          ? "Calculate by monthly saving"
-          : "Calculate by total amount"}
-        <Label>Total amount</Label>
-        <Input style={{ height: 42 }} prefix={<Prefix>$</Prefix>} />
-        <Label>Reach goal by</Label>
+        {switchState
+          ? "Calculate by total amount"
+          : "Calculate by monthly saving"}
+        <Label>
+          {switchState ? "Total amount" : "Calculate by monthly saving"}{" "}
+        </Label>
+        <Input
+          type="number"
+          value={switchState ? state.total_amount : state.monthly_amount}
+          onChange={(e) => {
+            switchState
+              ? dispatch(set_total_amount(e.target.value))
+              : dispatch(set_monthly_amount(e.target.value));
+          }}
+          style={{ height: 42 }}
+          prefix={<Prefix>$</Prefix>}
+        />
+        <Label>{switchState ? "Reach goal by" : "Save until"} </Label>
         <DatePicker
           format={dateFormat}
           style={{ height: 42, width: "100%" }}
           picker="month"
+          disabledDate={disabledDate}
+          onChange={onChangeDate}
+          value={moment(state.date)}
         />
         {/* Result block */}
         <div className="result-block">
           <div className="result-block_amount">
-            <div>{switchBtn ? "Monthly amount" : "Total amount"}</div>
-            <Price>$961.53</Price>
+            <div>{switchState ? "Monthly amount" : "Total amount"}</div>
+            <Price>
+              ${switchState ? state.monthly_amount : state.total_amount}
+            </Price>
           </div>
           <div className="result-block_text">
-            {switchBtn ? (
+            {switchState ? (
               <>
-                You are planning <b>26 monthly</b> deposits to reach your{" "}
-                <b>$25, 000</b> goal by
-                <b> April 2022.</b>
+                You are planning <b>{state.months_count} monthly</b> deposits to
+                reach your <b>${state.total_amount}</b> goal by
+                <b> {state.date}</b>
               </>
             ) : (
               <>
-                You are saving <b>$960 monthly</b> to save <b>$25, 000</b>{" "}
-                <b>by April 2022.</b>
+                You are saving <b>${state.monthly_amount} monthly</b> to save{" "}
+                <b>${state.total_amount}</b> <b>by {state.date}</b>
               </>
             )}
           </div>
         </div>
-        <Button className="finish_btn" type="primary">
+        <Button className="finish_btn" onClick={onFinish} type="primary">
           Finish
         </Button>
       </div>

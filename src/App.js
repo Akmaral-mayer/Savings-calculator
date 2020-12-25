@@ -18,6 +18,10 @@ const Header = styled.div`
   width: 400px;
   margin-bottom: 41px;
   margin-top: 19px;
+  @media (max-width: 400px) {
+    margin-bottom: 37px;
+    margin-top: 39px;
+  }
 `;
 
 export const App = () => {
